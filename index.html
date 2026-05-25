@@ -75,6 +75,16 @@
       letter-spacing: 0;
     }
 
+    .live-time {
+      display: block;
+      margin-top: 7px;
+      color: rgba(43, 36, 28, .6);
+      font-size: 13px;
+      line-height: 1.35;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
     .sub {
       margin: 6px 0 0;
       color: var(--muted);
@@ -536,6 +546,7 @@
       <header class="topbar">
         <div>
           <h1>噜噜小空调</h1>
+          <time class="live-time" id="liveTime" datetime="">北京时间读取中</time>
         </div>
       </header>
 
@@ -612,6 +623,7 @@
     const modeTitle = document.querySelector("#modeTitle");
     const modeText = document.querySelector("#modeText");
     const temperatureEl = document.querySelector("#temperature");
+    const liveTime = document.querySelector("#liveTime");
     const toast = document.querySelector("#toast");
     const luluOn = document.querySelector("#luluOn");
 
@@ -705,6 +717,23 @@
       const copy = getTemperatureCopy();
       modeTitle.textContent = copy.title;
       modeText.textContent = copy.text;
+    }
+
+    function updateLiveTime() {
+      const now = new Date();
+      const timeText = new Intl.DateTimeFormat("zh-CN", {
+        timeZone: "Asia/Shanghai",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        weekday: "long",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false
+      }).format(now);
+      liveTime.textContent = "北京时间 " + timeText;
+      liveTime.dateTime = now.toISOString();
     }
 
     function roundWeatherValue(value) {
@@ -987,6 +1016,8 @@
       });
     });
 
+    updateLiveTime();
+    window.setInterval(updateLiveTime, 1000);
     render();
     loadWeather();
   </script>
