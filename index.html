@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="format-detection" content="telephone=no">
-  <title>水豚噜噜小空调</title>
+  <title>噜噜小空调</title>
   <style>
     :root {
       --cream: #fff8e9;
@@ -60,29 +60,10 @@
     }
 
     .topbar {
-      display: grid;
-      grid-template-columns: 62px 1fr;
-      gap: 13px;
-      align-items: center;
+      display: block;
       margin-bottom: 15px;
       padding: 0 6px;
-    }
-
-    .logo {
-      display: grid;
-      place-items: center;
-      width: 62px;
-      height: 62px;
-      border: 3px solid rgba(255, 255, 255, .9);
-      border-radius: 50%;
-      background: linear-gradient(145deg, #ffe987, #ffad2e);
-      box-shadow: 0 12px 22px rgba(196, 116, 28, .2);
-      overflow: hidden;
-    }
-
-    .logo svg {
-      width: 56px;
-      height: 56px;
+      text-align: center;
     }
 
     h1 {
@@ -478,21 +459,10 @@
 </head>
 <body>
   <main class="page">
-    <section class="app" id="app" aria-label="水豚噜噜小空调">
+    <section class="app" id="app" aria-label="噜噜小空调">
       <header class="topbar">
-        <div class="logo" aria-label="水豚噜噜 logo">
-          <svg viewBox="0 0 90 90" role="img">
-            <circle cx="45" cy="45" r="40" fill="#ffe36e"/>
-            <ellipse cx="45" cy="52" rx="30" ry="23" fill="#ffad2e"/>
-            <circle cx="33" cy="40" r="6" fill="#2b241c"/>
-            <circle cx="57" cy="40" r="6" fill="#2b241c"/>
-            <path d="M37 56c5 5 12 5 17 0" fill="none" stroke="#2b241c" stroke-width="4" stroke-linecap="round"/>
-            <ellipse cx="45" cy="15" rx="12" ry="10" fill="#ff9f22"/>
-            <path d="M47 7c4-6 10-6 8 2" fill="none" stroke="#6d7f34" stroke-width="4" stroke-linecap="round"/>
-          </svg>
-        </div>
         <div>
-          <h1>水豚噜噜小空调</h1>
+          <h1>噜噜小空调</h1>
         </div>
       </header>
 
@@ -500,8 +470,8 @@
         <div class="hero">
           <div class="air" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
           <div class="character-wrap">
-            <img class="character on" id="luluOn" src="assets/lulu-on.png" alt="开空调的水豚噜噜">
-            <img class="character off" src="assets/lulu-off.png" alt="不开空调的水豚噜噜">
+            <img class="character on" id="luluOn" src="assets/lulu-on.png" alt="开空调的噜噜">
+            <img class="character off" src="assets/lulu-off.png" alt="不开空调的噜噜">
             <div class="missing-on" aria-hidden="true">
               <strong>缺少开空调图</strong>
               把图1原图保存为 <code>assets/lulu-on.png</code> 后，这里会自动显示开心状态。
@@ -538,7 +508,7 @@
         </div>
       </section>
 
-      <p class="footer">2026 © 水豚噜噜 · designed by YY</p>
+      <p class="footer">2026 © 噜噜 · designed by YY</p>
     </section>
   </main>
 
