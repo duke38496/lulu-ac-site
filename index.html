@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="format-detection" content="telephone=no">
+  <title>水豚噜噜小空调</title>
+  <style>
+    :root {
+      --cream: #fff8e9;
+      --yellow: #ffe36e;
+      --orange: #ff9f22;
+      --orange-dark: #c86c1e;
+      --blue: #55b9ff;
+      --ink: #2b241c;
+      --muted: #8b7764;
+      --card: rgba(255, 255, 255, .72);
+      --shadow: 0 24px 56px rgba(115, 76, 24, .2);
+      color-scheme: light;
+      font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 16% 10%, rgba(255, 214, 84, .42), transparent 28%),
+        radial-gradient(circle at 88% 16%, rgba(85, 185, 255, .24), transparent 30%),
+        linear-gradient(150deg, #fff7e1 0%, #fffdf6 44%, #e9f7ff 100%);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      position: fixed;
+      inset: auto -12vw -120px -12vw;
+      height: 260px;
+      pointer-events: none;
+      content: "";
+      background:
+        repeating-radial-gradient(ellipse at 50% 100%, transparent 0 17px, rgba(255, 159, 34, .12) 18px 20px),
+        linear-gradient(180deg, transparent, rgba(255, 159, 34, .11));
+      transform: rotate(-2deg);
+    }
+
+    .page {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      padding: 24px 18px 28px;
+    }
+
+    .app {
+      width: min(430px, 100%);
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: 62px 1fr;
+      gap: 13px;
+      align-items: center;
+      margin-bottom: 15px;
+      padding: 0 6px;
+    }
+
+    .logo {
+      display: grid;
+      place-items: center;
+      width: 62px;
+      height: 62px;
+      border: 3px solid rgba(255, 255, 255, .9);
+      border-radius: 50%;
+      background: linear-gradient(145deg, #ffe987, #ffad2e);
+      box-shadow: 0 12px 22px rgba(196, 116, 28, .2);
+      overflow: hidden;
+    }
+
+    .logo svg {
+      width: 56px;
+      height: 56px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.08;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+
+    .sub {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .card {
+      position: relative;
+      border: 1px solid rgba(201, 132, 40, .16);
+      border-radius: 24px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      overflow: hidden;
+      transition: border-color .25s ease, box-shadow .25s ease;
+    }
+
+    .is-on.mode-cool .card {
+      border-color: rgba(85, 185, 255, .44);
+      box-shadow:
+        0 24px 56px rgba(44, 147, 224, .28),
+        0 0 46px rgba(85, 185, 255, .28);
+    }
+
+    .is-on.mode-warm .card {
+      border-color: rgba(255, 159, 34, .48);
+      box-shadow:
+        0 24px 56px rgba(210, 107, 22, .26),
+        0 0 50px rgba(255, 159, 34, .32);
+    }
+
+    .card::before {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      content: "";
+      background:
+        radial-gradient(circle at 50% 0, rgba(255, 227, 110, .36), transparent 34%),
+        linear-gradient(180deg, rgba(255,255,255,.54), transparent 42%);
+    }
+
+    .hero {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      place-items: center;
+      min-height: 382px;
+      padding: 18px 14px 8px;
+    }
+
+    .character-wrap {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: min(350px, 95%);
+      aspect-ratio: 1 / 1.02;
+    }
+
+    .character-wrap::before {
+      position: absolute;
+      inset: 12% 7% 8%;
+      border-radius: 45%;
+      opacity: 0;
+      filter: blur(28px);
+      content: "";
+      transition: opacity .25s ease, background .25s ease;
+    }
+
+    .is-on.mode-cool .character-wrap::before {
+      opacity: .76;
+      background: rgba(85, 185, 255, .34);
+    }
+
+    .is-on.mode-warm .character-wrap::before {
+      opacity: .78;
+      background: rgba(255, 159, 34, .36);
+    }
+
+    .character {
+      position: absolute;
+      inset: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      transform-origin: 50% 76%;
+      transition: opacity .2s ease, transform .25s ease, filter .25s ease;
+      filter: drop-shadow(0 18px 22px rgba(121, 75, 20, .16));
+    }
+
+    .character.on {
+      opacity: 0;
+      transform: translateY(18px) scale(.92);
+    }
+
+    .character.off {
+      opacity: 1;
+      transform: translateY(2px) scale(.94);
+    }
+
+    .is-on .character.on {
+      opacity: 1;
+      transform: translateY(-6px) scale(1);
+      animation: happy-hop 1.25s ease-in-out infinite alternate;
+    }
+
+    .is-on .character.off {
+      opacity: 0;
+      transform: translateY(26px) scale(.88);
+    }
+
+    .missing-on-image .character.on {
+      display: none;
+    }
+
+    .missing-on {
+      position: absolute;
+      display: none;
+      width: min(310px, 92%);
+      padding: 22px;
+      border: 1px dashed rgba(255, 159, 34, .5);
+      border-radius: 22px;
+      color: var(--muted);
+      background: rgba(255, 255, 255, .82);
+      box-shadow: 0 16px 28px rgba(121, 75, 20, .12);
+      font-size: 15px;
+      line-height: 1.55;
+      text-align: center;
+    }
+
+    .missing-on strong {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--ink);
+      font-size: 19px;
+    }
+
+    .is-on.missing-on-image .missing-on {
+      display: block;
+    }
+
+    @keyframes happy-hop {
+      from {
+        transform: translateY(-2px) rotate(-1deg) scale(1);
+      }
+      to {
+        transform: translateY(-14px) rotate(1deg) scale(1.015);
+      }
+    }
+
+    .air {
+      position: absolute;
+      inset: 44px 12px auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 22px;
+      height: 132px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease;
+    }
+
+    .air i {
+      border-radius: 999px;
+      background: linear-gradient(180deg, rgba(85, 185, 255, 0), rgba(85, 185, 255, .32), rgba(85, 185, 255, 0));
+      transform-origin: 50% 0;
+      animation: wind 1.05s ease-in-out infinite alternate;
+    }
+
+    .is-on.mode-warm .air i {
+      background: linear-gradient(180deg, rgba(255, 159, 34, 0), rgba(255, 159, 34, .34), rgba(255, 159, 34, 0));
+    }
+
+    .air i:nth-child(2) {
+      animation-delay: .16s;
+    }
+
+    .air i:nth-child(3) {
+      animation-delay: .28s;
+    }
+
+    .air i:nth-child(4) {
+      animation-delay: .1s;
+    }
+
+    .is-on .air {
+      opacity: 1;
+    }
+
+    @keyframes wind {
+      from {
+        transform: translateY(-6px) rotate(-6deg) scaleY(.72);
+      }
+      to {
+        transform: translateY(16px) rotate(7deg) scaleY(1.08);
+      }
+    }
+
+    .console {
+      position: relative;
+      z-index: 1;
+      margin: -6px 18px 0;
+      padding: 16px;
+      border: 1px solid rgba(201, 132, 40, .14);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, .78);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9);
+    }
+
+    .readout {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .state-text {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .state-text strong {
+      display: block;
+      color: var(--ink);
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    .temperature {
+      display: flex;
+      align-items: baseline;
+      min-width: 96px;
+      color: var(--orange-dark);
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+      transition: color .2s ease;
+    }
+
+    .is-on.mode-cool .temperature {
+      color: #1989d4;
+    }
+
+    .is-on.mode-warm .temperature {
+      color: var(--orange-dark);
+    }
+
+    .temperature b {
+      font-size: 54px;
+      line-height: .9;
+      font-weight: 900;
+    }
+
+    .temperature span {
+      margin-left: 2px;
+      font-size: 21px;
+      font-weight: 800;
+    }
+
+    .controls {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(5, 56px);
+      gap: 10px;
+      justify-content: center;
+      padding: 18px 16px 24px;
+    }
+
+    button {
+      display: grid;
+      place-items: center;
+      width: 56px;
+      height: 56px;
+      border: 0;
+      border-radius: 50%;
+      color: white;
+      background: #322a22;
+      box-shadow: 0 12px 22px rgba(121, 75, 20, .2);
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
+    }
+
+    button:active {
+      transform: translateY(3px) scale(.96);
+      box-shadow: 0 7px 14px rgba(121, 75, 20, .18);
+    }
+
+    button svg {
+      width: 27px;
+      height: 27px;
+      fill: currentColor;
+    }
+
+    .power {
+      width: 66px;
+      height: 66px;
+      margin-top: -5px;
+      background: #3a3028;
+    }
+
+    .is-on .power {
+      background: #28b66a;
+    }
+
+    .cool {
+      background: var(--blue);
+    }
+
+    .warm {
+      background: var(--orange);
+    }
+
+    .step {
+      color: var(--ink);
+      background: #fff1c9;
+    }
+
+    .footer {
+      margin: 14px 0 0;
+      color: rgba(43, 36, 28, .55);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      left: 18px;
+      z-index: 9;
+      max-width: 390px;
+      margin: 0 auto;
+      padding: 12px 14px;
+      border-radius: 16px;
+      color: white;
+      background: rgba(43, 36, 28, .92);
+      box-shadow: 0 14px 30px rgba(43, 36, 28, .22);
+      font-size: 14px;
+      text-align: center;
+      transform: translateY(28px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease, transform .2s ease;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    @media (max-width: 380px) {
+      h1 {
+        font-size: 26px;
+      }
+
+      .hero {
+        min-height: 338px;
+      }
+
+      .controls {
+        grid-template-columns: repeat(5, 50px);
+        gap: 8px;
+      }
+
+      button {
+        width: 50px;
+        height: 50px;
+      }
+
+      .power {
+        width: 60px;
+        height: 60px;
+      }
+
+      .temperature b {
+        font-size: 46px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="app" id="app" aria-label="水豚噜噜小空调">
+      <header class="topbar">
+        <div class="logo" aria-label="水豚噜噜 logo">
+          <svg viewBox="0 0 90 90" role="img">
+            <circle cx="45" cy="45" r="40" fill="#ffe36e"/>
+            <ellipse cx="45" cy="52" rx="30" ry="23" fill="#ffad2e"/>
+            <circle cx="33" cy="40" r="6" fill="#2b241c"/>
+            <circle cx="57" cy="40" r="6" fill="#2b241c"/>
+            <path d="M37 56c5 5 12 5 17 0" fill="none" stroke="#2b241c" stroke-width="4" stroke-linecap="round"/>
+            <ellipse cx="45" cy="15" rx="12" ry="10" fill="#ff9f22"/>
+            <path d="M47 7c4-6 10-6 8 2" fill="none" stroke="#6d7f34" stroke-width="4" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <h1>水豚噜噜小空调</h1>
+          <p class="sub">开空调就开心，不开空调就委屈。</p>
+        </div>
+      </header>
+
+      <section class="card">
+        <div class="hero">
+          <div class="air" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+          <div class="character-wrap">
+            <img class="character on" id="luluOn" src="assets/lulu-on.png" alt="开空调的水豚噜噜">
+            <img class="character off" src="assets/lulu-off.png" alt="不开空调的水豚噜噜">
+            <div class="missing-on" aria-hidden="true">
+              <strong>缺少开空调图</strong>
+              把图1原图保存为 <code>assets/lulu-on.png</code> 后，这里会自动显示开心状态。
+            </div>
+          </div>
+        </div>
+
+        <section class="console">
+          <div class="readout">
+            <div class="state-text">
+              <strong id="modeTitle">空调未开启</strong>
+              <span id="modeText">噜噜正在等你开空调。</span>
+            </div>
+            <div class="temperature" aria-live="polite"><b id="temperature">26</b><span>°C</span></div>
+          </div>
+        </section>
+
+        <div class="controls" aria-label="空调控制">
+          <button class="cool" type="button" id="cool" aria-label="制冷">
+            <svg viewBox="0 0 24 24"><path d="M11 2h2v5.17l3.66-3.66 1.41 1.42L13 10h2.59l4.24-4.24 1.41 1.41L17.41 11H22v2h-4.59l3.83 3.83-1.41 1.41L15.59 14H13l5.07 5.07-1.41 1.42L13 16.83V22h-2v-5.17l-3.66 3.66-1.41-1.42L11 14H8.41l-4.24 4.24-1.41-1.41L6.59 13H2v-2h4.59L2.76 7.17l1.41-1.41L8.41 10H11L5.93 4.93l1.41-1.42L11 7.17V2z"/></svg>
+          </button>
+          <button class="step" type="button" id="minus" aria-label="降低温度">
+            <svg viewBox="0 0 24 24"><path d="M6 13h12v-2H6v2z"/></svg>
+          </button>
+          <button class="power" type="button" id="power" aria-label="开关">
+            <svg viewBox="0 0 24 24"><path d="M13 3h-2v10h2V3zm4.83 2.17-1.42 1.42A6.94 6.94 0 0 1 19 12a7 7 0 1 1-11.41-5.42L6.17 5.17A9 9 0 1 0 21 12c0-2.74-1.23-5.18-3.17-6.83z"/></svg>
+          </button>
+          <button class="step" type="button" id="plus" aria-label="升高温度">
+            <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+          </button>
+          <button class="warm" type="button" id="warm" aria-label="制热">
+            <svg viewBox="0 0 24 24"><path d="M6.76 4.84 4.96 3.05 3.55 4.46l1.79 1.79 1.42-1.41zM4 10.5H1v2h3v-2zm9-9.95h-2V3.5h2V.55zm7.45 3.91-1.41-1.41-1.79 1.79 1.41 1.41 1.79-1.79zM12 5.5a6 6 0 1 0 0 12 6 6 0 0 0 0-12zm8 5v2h3v-2h-3zm-3.24 7.66 1.79 1.8 1.41-1.41-1.8-1.79-1.4 1.4zM11 22.45h2V19.5h-2v2.95zm-7.45-3.91 1.41 1.41 1.79-1.8-1.41-1.41-1.79 1.8z"/></svg>
+          </button>
+        </div>
+      </section>
+
+      <p class="footer">2026 © 水豚噜噜</p>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const app = document.querySelector("#app");
+    const modeTitle = document.querySelector("#modeTitle");
+    const modeText = document.querySelector("#modeText");
+    const temperatureEl = document.querySelector("#temperature");
+    const toast = document.querySelector("#toast");
+    const luluOn = document.querySelector("#luluOn");
+
+    const state = {
+      on: false,
+      mode: "cool",
+      temperature: 26
+    };
+
+    luluOn.addEventListener("error", () => {
+      app.classList.add("missing-on-image");
+    });
+
+    luluOn.addEventListener("load", () => {
+      app.classList.remove("missing-on-image");
+    });
+
+    function render() {
+      app.classList.toggle("is-on", state.on);
+      app.classList.toggle("mode-cool", state.mode === "cool");
+      app.classList.toggle("mode-warm", state.mode === "warm");
+      temperatureEl.textContent = state.temperature;
+
+      if (!state.on) {
+        modeTitle.textContent = "空调未开启";
+        modeText.textContent = "噜噜正在等你开空调。";
+        return;
+      }
+
+      if (state.mode === "warm") {
+        modeTitle.textContent = "暖风已开启";
+        modeText.textContent = "噜噜舒服了，但好像更适合冬天。";
+      } else {
+        modeTitle.textContent = "冷风已开启";
+        modeText.textContent = "噜噜开心起飞，正在努力降温。";
+      }
+    }
+
+    function showToast(text) {
+      toast.textContent = text;
+      toast.classList.add("show");
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 1300);
+    }
+
+    function createAudioContext() {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      return AudioContext ? new AudioContext() : null;
+    }
+
+    function beep(frequency, duration, volume = .055) {
+      const ctx = createAudioContext();
+      if (!ctx) return;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.frequency.value = frequency;
+      osc.type = "sine";
+      gain.gain.setValueAtTime(.001, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(volume, ctx.currentTime + .012);
+      gain.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + duration / 1000);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + duration / 1000);
+    }
+
+    function playPowerSound(turningOn) {
+      const ctx = createAudioContext();
+      if (!ctx) return;
+
+      const noiseBuffer = ctx.createBuffer(1, ctx.sampleRate * .36, ctx.sampleRate);
+      const data = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < data.length; i += 1) {
+        data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
+      }
+
+      const noise = ctx.createBufferSource();
+      const noiseGain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+      noise.buffer = noiseBuffer;
+      filter.type = "bandpass";
+      filter.frequency.value = turningOn ? 520 : 180;
+      noiseGain.gain.setValueAtTime(.001, ctx.currentTime);
+      noiseGain.gain.exponentialRampToValueAtTime(turningOn ? .075 : .045, ctx.currentTime + .03);
+      noiseGain.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + .34);
+      noise.connect(filter);
+      filter.connect(noiseGain);
+      noiseGain.connect(ctx.destination);
+
+      const tone = ctx.createOscillator();
+      const toneGain = ctx.createGain();
+      tone.type = "triangle";
+      tone.frequency.setValueAtTime(turningOn ? 260 : 430, ctx.currentTime);
+      tone.frequency.exponentialRampToValueAtTime(turningOn ? 740 : 160, ctx.currentTime + .22);
+      toneGain.gain.setValueAtTime(.001, ctx.currentTime);
+      toneGain.gain.exponentialRampToValueAtTime(.07, ctx.currentTime + .02);
+      toneGain.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + .24);
+      tone.connect(toneGain);
+      toneGain.connect(ctx.destination);
+
+      noise.start();
+      noise.stop(ctx.currentTime + .36);
+      tone.start();
+      tone.stop(ctx.currentTime + .26);
+    }
+
+    document.querySelector("#power").addEventListener("click", () => {
+      state.on = !state.on;
+      playPowerSound(state.on);
+      showToast(state.on ? "空调已开启，噜噜开心了。" : "空调已关闭，噜噜委屈了。");
+      render();
+    });
+
+    document.querySelector("#cool").addEventListener("click", () => {
+      state.on = true;
+      state.mode = "cool";
+      state.temperature = Math.min(state.temperature, 24);
+      beep(760, 95, .06);
+      showToast("切换到冷风。");
+      render();
+    });
+
+    document.querySelector("#warm").addEventListener("click", () => {
+      state.on = true;
+      state.mode = "warm";
+      state.temperature = Math.max(state.temperature, 27);
+      beep(430, 115, .06);
+      showToast("切换到暖风。");
+      render();
+    });
+
+    document.querySelector("#minus").addEventListener("click", () => {
+      state.on = true;
+      state.temperature = Math.max(16, state.temperature - 1);
+      beep(520, 75);
+      showToast("温度降低到 " + state.temperature + "°C");
+      render();
+    });
+
+    document.querySelector("#plus").addEventListener("click", () => {
+      state.on = true;
+      state.temperature = Math.min(32, state.temperature + 1);
+      beep(660, 75);
+      showToast("温度升高到 " + state.temperature + "°C");
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>
