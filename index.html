@@ -538,7 +538,7 @@
         </div>
       </section>
 
-      <p class="footer">2026 © 水豚噜噜</p>
+      <p class="footer">2026 © 水豚噜噜 · designed by YY</p>
     </section>
   </main>
 
@@ -566,6 +566,34 @@
       app.classList.remove("missing-on-image");
     });
 
+    function getTemperatureCopy() {
+      if (state.temperature <= 18) {
+        return {
+          title: "温度过低",
+          text: "噜噜快冻成小冰块了，建议调高一点。"
+        };
+      }
+
+      if (state.temperature >= 30) {
+        return {
+          title: "温度过高",
+          text: "噜噜热到脸更圆了，建议调低一点。"
+        };
+      }
+
+      if (state.mode === "warm") {
+        return {
+          title: "暖风已开启",
+          text: "噜噜舒服了，但好像更适合冬天。"
+        };
+      }
+
+      return {
+        title: "冷风已开启",
+        text: "噜噜开心起飞，正在努力降温。"
+      };
+    }
+
     function render() {
       app.classList.toggle("is-on", state.on);
       app.classList.toggle("mode-cool", state.mode === "cool");
@@ -578,13 +606,9 @@
         return;
       }
 
-      if (state.mode === "warm") {
-        modeTitle.textContent = "暖风已开启";
-        modeText.textContent = "噜噜舒服了，但好像更适合冬天。";
-      } else {
-        modeTitle.textContent = "冷风已开启";
-        modeText.textContent = "噜噜开心起飞，正在努力降温。";
-      }
+      const copy = getTemperatureCopy();
+      modeTitle.textContent = copy.title;
+      modeText.textContent = copy.text;
     }
 
     function showToast(text) {
