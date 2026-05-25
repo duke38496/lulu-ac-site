@@ -50,7 +50,8 @@
     .page {
       position: relative;
       display: grid;
-      place-items: center;
+      align-items: start;
+      justify-items: center;
       min-height: 100vh;
       padding: 24px 18px 28px;
     }
@@ -121,15 +122,15 @@
       z-index: 1;
       display: grid;
       place-items: center;
-      min-height: 382px;
-      padding: 18px 14px 8px;
+      min-height: 286px;
+      padding: 12px 14px 4px;
     }
 
     .character-wrap {
       position: relative;
       display: grid;
       place-items: center;
-      width: min(350px, 95%);
+      width: min(258px, 86%);
       aspect-ratio: 1 / 1.02;
     }
 
@@ -291,6 +292,74 @@
       align-items: center;
     }
 
+    .weather-list {
+      margin-top: 14px;
+      padding-top: 5px;
+      border-top: 1px solid rgba(201, 132, 40, .15);
+    }
+
+    .weather-advice {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 9px 0 8px;
+    }
+
+    .weather-advice + .weather-advice {
+      border-top: 1px solid rgba(201, 132, 40, .1);
+    }
+
+    .weather-advice > div {
+      min-width: 0;
+    }
+
+    .weather-kicker {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .weather-title {
+      display: block;
+      color: var(--ink);
+      font-size: 16px;
+      line-height: 1.25;
+      font-weight: 900;
+    }
+
+    .weather-copy {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      text-wrap: balance;
+    }
+
+    .weather-action {
+      width: auto;
+      height: 40px;
+      min-width: 86px;
+      padding: 0 14px;
+      border-radius: 999px;
+      color: var(--ink);
+      background: #fff1c9;
+      box-shadow: 0 9px 18px rgba(121, 75, 20, .14);
+      font-size: 13px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .weather-action:disabled {
+      color: rgba(43, 36, 28, .38);
+      background: rgba(255, 241, 201, .62);
+      box-shadow: none;
+      cursor: default;
+    }
+
     .state-text {
       color: var(--muted);
       font-size: 14px;
@@ -341,7 +410,7 @@
       grid-template-columns: repeat(5, 56px);
       gap: 10px;
       justify-content: center;
-      padding: 18px 16px 24px;
+      padding: 14px 16px 18px;
     }
 
     button {
@@ -433,7 +502,7 @@
       }
 
       .hero {
-        min-height: 338px;
+        min-height: 248px;
       }
 
       .controls {
@@ -487,6 +556,26 @@
             </div>
             <div class="temperature" aria-live="polite"><b id="temperature">26</b><span>°C</span></div>
           </div>
+
+          <div class="weather-list" aria-live="polite">
+            <div class="weather-advice" data-weather-city="hangzhou">
+              <div>
+                <span class="weather-kicker" data-weather-kicker>杭州实时天气</span>
+                <strong class="weather-title" data-weather-title>正在读取杭州温度</strong>
+                <span class="weather-copy" data-weather-copy>噜噜正在看窗外热不热。</span>
+              </div>
+              <button class="weather-action" type="button" data-apply-weather="hangzhou" disabled>读取中</button>
+            </div>
+
+            <div class="weather-advice" data-weather-city="nanchang">
+              <div>
+                <span class="weather-kicker" data-weather-kicker>南昌实时天气</span>
+                <strong class="weather-title" data-weather-title>正在读取南昌温度</strong>
+                <span class="weather-copy" data-weather-copy>噜噜正在看南昌热不热。</span>
+              </div>
+              <button class="weather-action" type="button" data-apply-weather="nanchang" disabled>读取中</button>
+            </div>
+          </div>
         </section>
 
         <div class="controls" aria-label="空调控制">
@@ -527,6 +616,25 @@
       mode: "cool",
       temperature: 26
     };
+
+    const weatherState = {
+      suggestions: {}
+    };
+
+    const weatherCities = [
+      { id: "hangzhou", name: "杭州", latitude: 30.2741, longitude: 120.1551 },
+      { id: "nanchang", name: "南昌", latitude: 28.682, longitude: 115.8582 }
+    ];
+
+    const weatherRows = {};
+    document.querySelectorAll("[data-weather-city]").forEach((row) => {
+      weatherRows[row.dataset.weatherCity] = {
+        kicker: row.querySelector("[data-weather-kicker]"),
+        title: row.querySelector("[data-weather-title]"),
+        copy: row.querySelector("[data-weather-copy]"),
+        button: row.querySelector("[data-apply-weather]")
+      };
+    });
 
     luluOn.addEventListener("error", () => {
       app.classList.add("missing-on-image");
@@ -593,6 +701,149 @@
       const copy = getTemperatureCopy();
       modeTitle.textContent = copy.title;
       modeText.textContent = copy.text;
+    }
+
+    function roundWeatherValue(value) {
+      return Math.round(Number(value));
+    }
+
+    function getWeatherSuggestion(feelsLike, cityName) {
+      if (feelsLike >= 35) {
+        return {
+          mode: "cool",
+          temperature: 25,
+          action: "开冷气",
+          title: "建议冷气 25°C",
+          text: cityName + "体感很热，先把房间快速降下来。"
+        };
+      }
+
+      if (feelsLike >= 30) {
+        return {
+          mode: "cool",
+          temperature: 26,
+          action: "开冷气",
+          title: "建议冷气 26°C",
+          text: "外面偏热，26°C 比较舒服也不太费电。"
+        };
+      }
+
+      if (feelsLike >= 26) {
+        return {
+          mode: "cool",
+          temperature: 27,
+          action: "开冷气",
+          title: "建议冷气 27°C",
+          text: "有点闷热，轻轻开一下冷气就够了。"
+        };
+      }
+
+      if (feelsLike <= 8) {
+        return {
+          mode: "warm",
+          temperature: 24,
+          action: "开暖气",
+          title: "建议暖气 24°C",
+          text: cityName + "体感很冷，让噜噜先暖起来。"
+        };
+      }
+
+      if (feelsLike <= 15) {
+        return {
+          mode: "warm",
+          temperature: 23,
+          action: "开暖气",
+          title: "建议暖气 23°C",
+          text: "外面偏冷，开一点暖气会更舒服。"
+        };
+      }
+
+      if (feelsLike <= 20) {
+        return {
+          mode: "warm",
+          temperature: 22,
+          action: "开暖气",
+          title: "建议暖气 22°C",
+          text: "微微有点凉，22°C 就不要太夸张。"
+        };
+      }
+
+      return {
+        mode: "cool",
+        temperature: 26,
+        action: "先不开",
+        title: "建议先不开空调",
+        text: cityName + "现在体感刚好，想开的话设 26°C 就行。"
+      };
+    }
+
+    function setWeatherLoading(city) {
+      const row = weatherRows[city.id];
+      weatherState.suggestions[city.id] = null;
+      row.kicker.textContent = city.name + "实时天气";
+      row.title.textContent = "正在读取" + city.name + "温度";
+      row.copy.textContent = "噜噜正在看" + city.name + "热不热。";
+      row.button.textContent = "读取中";
+      row.button.disabled = true;
+    }
+
+    function setWeatherError(city) {
+      const row = weatherRows[city.id];
+      weatherState.suggestions[city.id] = {
+        mode: "cool",
+        temperature: 26,
+        action: "设为 26°C",
+        title: "建议冷气 26°C",
+        text: "先按通用舒适温度设置。"
+      };
+      row.kicker.textContent = city.name + "实时天气";
+      row.title.textContent = "天气读取失败";
+      row.copy.textContent = "先按通用舒适温度设置 26°C。";
+      row.button.textContent = "采用";
+      row.button.disabled = false;
+    }
+
+    function renderWeatherAdvice(city, weather, suggestion) {
+      const row = weatherRows[city.id];
+      const temperature = roundWeatherValue(weather.temperature);
+      const feelsLike = roundWeatherValue(weather.feelsLike);
+      const humidity = Number.isFinite(weather.humidity) ? " · 湿度 " + roundWeatherValue(weather.humidity) + "%" : "";
+      weatherState.suggestions[city.id] = suggestion;
+      row.kicker.textContent = city.name + " " + temperature + "°C · 体感 " + feelsLike + "°C" + humidity;
+      row.title.textContent = suggestion.title;
+      row.copy.textContent = suggestion.text;
+      row.button.textContent = "采用建议";
+      row.button.disabled = false;
+    }
+
+    async function loadCityWeather(city) {
+      setWeatherLoading(city);
+
+      try {
+        const url = "https://api.open-meteo.com/v1/forecast?latitude=" + city.latitude + "&longitude=" + city.longitude + "&current=temperature_2m,apparent_temperature,relative_humidity_2m&timezone=Asia%2FShanghai";
+        const response = await fetch(url, { cache: "no-store" });
+        if (!response.ok) throw new Error("Weather request failed");
+
+        const data = await response.json();
+        const current = data.current || {};
+        const weather = {
+          temperature: Number(current.temperature_2m),
+          feelsLike: Number(current.apparent_temperature),
+          humidity: Number(current.relative_humidity_2m)
+        };
+
+        if (!Number.isFinite(weather.temperature) || !Number.isFinite(weather.feelsLike)) {
+          throw new Error("Weather payload missing values");
+        }
+
+        renderWeatherAdvice(city, weather, getWeatherSuggestion(weather.feelsLike, city.name));
+      } catch (error) {
+        setWeatherError(city);
+      }
+    }
+
+    function loadWeather() {
+      weatherCities.forEach(loadCityWeather);
     }
 
     function showToast(text) {
@@ -704,7 +955,33 @@
       render();
     });
 
+    function applyWeatherSuggestion(cityId) {
+      const city = weatherCities.find((item) => item.id === cityId);
+      const suggestion = weatherState.suggestions[cityId];
+      if (!suggestion) return;
+
+      state.mode = suggestion.mode;
+      state.temperature = suggestion.temperature;
+
+      if (suggestion.action === "先不开") {
+        state.on = false;
+      } else {
+        state.on = true;
+        beep(suggestion.mode === "warm" ? 430 : 760, 95, .055);
+      }
+
+      showToast("已采用" + (city ? city.name : "") + "：" + suggestion.title);
+      render();
+    }
+
+    document.querySelectorAll("[data-apply-weather]").forEach((button) => {
+      button.addEventListener("click", () => {
+        applyWeatherSuggestion(button.dataset.applyWeather);
+      });
+    });
+
     render();
+    loadWeather();
   </script>
 </body>
 </html>
