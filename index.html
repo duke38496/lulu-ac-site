@@ -537,24 +537,38 @@
     });
 
     function getTemperatureCopy() {
+      if (state.mode === "warm") {
+        if (state.temperature <= 18) {
+          return {
+            title: "暖气太低了",
+            text: "暖气开这么低，噜噜还是抱紧自己取暖。"
+          };
+        }
+
+        if (state.temperature >= 30) {
+          return {
+            title: "暖气太热了",
+            text: "噜噜热到脸更圆了，调低一点吧。"
+          };
+        }
+
+        return {
+          title: "暖风已开启",
+          text: "噜噜舒服了，但好像更适合冬天。"
+        };
+      }
+
       if (state.temperature <= 18) {
         return {
-          title: "温度过低",
-          text: "噜噜快冻成小冰块了，建议调高一点。"
+          title: "冷气太冷了",
+          text: "噜噜快被吹成小冰块了，调高一点吧。"
         };
       }
 
       if (state.temperature >= 30) {
         return {
-          title: "温度过高",
-          text: "噜噜热到脸更圆了，建议调低一点。"
-        };
-      }
-
-      if (state.mode === "warm") {
-        return {
-          title: "暖风已开启",
-          text: "噜噜舒服了，但好像更适合冬天。"
+          title: "冷气不够凉",
+          text: "冷气开到这个温度，噜噜还是热得委屈。"
         };
       }
 
