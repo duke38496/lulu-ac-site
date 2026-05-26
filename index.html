@@ -588,7 +588,7 @@
               <div>
                 <span class="weather-kicker" data-weather-kicker>杭州实时天气</span>
                 <strong class="weather-title" data-weather-title>正在读取杭州温度</strong>
-                <span class="weather-copy" data-weather-copy>噜噜正在看窗外热不热。</span>
+                <span class="weather-copy" data-weather-copy hidden></span>
               </div>
               <button class="weather-action" type="button" data-apply-weather="hangzhou" disabled>读取中</button>
             </div>
@@ -597,7 +597,7 @@
               <div>
                 <span class="weather-kicker" data-weather-kicker>南昌实时天气</span>
                 <strong class="weather-title" data-weather-title>正在读取南昌温度</strong>
-                <span class="weather-copy" data-weather-copy>噜噜正在看南昌热不热。</span>
+                <span class="weather-copy" data-weather-copy hidden></span>
               </div>
               <button class="weather-action" type="button" data-apply-weather="nanchang" disabled>读取中</button>
             </div>
@@ -763,7 +763,7 @@
           temperature: 25,
           action: "开冷气",
           title: "建议冷气 25°C",
-          text: cityName + "体感很热，先把房间快速降下来。"
+          text: ""
         };
       }
 
@@ -783,7 +783,7 @@
           temperature: 27,
           action: "开冷气",
           title: "建议冷气 27°C",
-          text: "有点闷热，轻轻开一下冷气就够了。"
+          text: ""
         };
       }
 
@@ -793,7 +793,7 @@
           temperature: 24,
           action: "开暖气",
           title: "建议暖气 24°C",
-          text: cityName + "体感很冷，让噜噜先暖起来。"
+          text: ""
         };
       }
 
@@ -803,7 +803,7 @@
           temperature: 23,
           action: "开暖气",
           title: "建议暖气 23°C",
-          text: "外面偏冷，开一点暖气会更舒服。"
+          text: ""
         };
       }
 
@@ -813,7 +813,7 @@
           temperature: 22,
           action: "开暖气",
           title: "建议暖气 22°C",
-          text: "微微有点凉，22°C 就不要太夸张。"
+          text: ""
         };
       }
 
@@ -822,7 +822,7 @@
         temperature: 26,
         action: "先不开",
         title: "建议先不开空调",
-        text: cityName + "现在体感刚好，想开的话设 26°C 就行。"
+        text: ""
       };
     }
 
@@ -831,8 +831,8 @@
       weatherState.suggestions[city.id] = null;
       row.kicker.textContent = city.name + "实时天气";
       row.title.textContent = "正在读取" + city.name + "温度";
-      row.copy.textContent = "噜噜正在看" + city.name + "热不热。";
-      row.copy.hidden = false;
+      row.copy.textContent = "";
+      row.copy.hidden = true;
       row.button.textContent = "读取中";
       row.button.disabled = true;
     }
@@ -844,12 +844,12 @@
         temperature: 26,
         action: "设为 26°C",
         title: "建议冷气 26°C",
-        text: "先按通用舒适温度设置。"
+        text: ""
       };
       row.kicker.textContent = city.name + "实时天气";
       row.title.textContent = "天气读取失败";
-      row.copy.textContent = "先按通用舒适温度设置 26°C。";
-      row.copy.hidden = false;
+      row.copy.textContent = "";
+      row.copy.hidden = true;
       row.button.textContent = "采用";
       row.button.disabled = false;
     }
