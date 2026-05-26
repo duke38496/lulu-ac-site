@@ -197,6 +197,17 @@
       transform: translateY(26px) scale(.88);
     }
 
+    .is-on.is-uncomfortable .character.on {
+      opacity: 0;
+      transform: translateY(18px) scale(.92);
+      animation: none;
+    }
+
+    .is-on.is-uncomfortable .character.off {
+      opacity: 1;
+      transform: translateY(2px) scale(.94);
+    }
+
     .missing-on-image .character.on {
       display: none;
     }
@@ -702,10 +713,15 @@
       };
     }
 
+    function isTemperatureUncomfortable() {
+      return state.temperature <= 18 || state.temperature >= 30;
+    }
+
     function render() {
       app.classList.toggle("is-on", state.on);
       app.classList.toggle("mode-cool", state.mode === "cool");
       app.classList.toggle("mode-warm", state.mode === "warm");
+      app.classList.toggle("is-uncomfortable", state.on && isTemperatureUncomfortable());
       temperatureEl.textContent = state.temperature;
 
       if (!state.on) {
