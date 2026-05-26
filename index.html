@@ -315,8 +315,40 @@
 
     .weather-list {
       margin-top: 14px;
-      padding-top: 5px;
+      padding-top: 8px;
       border-top: 1px solid rgba(201, 132, 40, .15);
+    }
+
+    .weather-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 8px;
+    }
+
+    .city-field {
+      display: grid;
+      grid-template-columns: auto auto;
+      gap: 8px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .city-select {
+      min-width: 108px;
+      height: 36px;
+      padding: 0 12px;
+      border: 1px solid rgba(201, 132, 40, .2);
+      border-radius: 999px;
+      color: var(--ink);
+      background: #fff8e9;
+      box-shadow: 0 7px 16px rgba(121, 75, 20, .09);
+      font: inherit;
+      font-size: 14px;
+      cursor: pointer;
     }
 
     .weather-advice {
@@ -325,10 +357,6 @@
       gap: 12px;
       align-items: center;
       padding: 9px 0 8px;
-    }
-
-    .weather-advice + .weather-advice {
-      border-top: 1px solid rgba(201, 132, 40, .1);
     }
 
     .weather-advice > div {
@@ -584,22 +612,30 @@
           </div>
 
           <div class="weather-list" aria-live="polite">
-            <div class="weather-advice" data-weather-city="hangzhou">
+            <div class="weather-toolbar">
+              <label class="city-field" for="citySelect">
+                <span>天气城市</span>
+                <select class="city-select" id="citySelect">
+                  <option value="hangzhou" data-latitude="30.2741" data-longitude="120.1551">杭州</option>
+                  <option value="shanghai" data-latitude="31.2304" data-longitude="121.4737">上海</option>
+                  <option value="beijing" data-latitude="39.9042" data-longitude="116.4074">北京</option>
+                  <option value="guangzhou" data-latitude="23.1291" data-longitude="113.2644">广州</option>
+                  <option value="changsha" data-latitude="28.2282" data-longitude="112.9388">长沙</option>
+                  <option value="nanchang" data-latitude="28.682" data-longitude="115.8582">南昌</option>
+                  <option value="wuhan" data-latitude="30.5928" data-longitude="114.3055">武汉</option>
+                  <option value="zhengzhou" data-latitude="34.7466" data-longitude="113.6254">郑州</option>
+                  <option value="nanjing" data-latitude="32.0603" data-longitude="118.7969">南京</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="weather-advice">
               <div>
                 <span class="weather-kicker" data-weather-kicker>杭州实时天气</span>
                 <strong class="weather-title" data-weather-title>正在读取杭州温度</strong>
                 <span class="weather-copy" data-weather-copy hidden></span>
               </div>
-              <button class="weather-action" type="button" data-apply-weather="hangzhou" disabled>读取中</button>
-            </div>
-
-            <div class="weather-advice" data-weather-city="nanchang">
-              <div>
-                <span class="weather-kicker" data-weather-kicker>南昌实时天气</span>
-                <strong class="weather-title" data-weather-title>正在读取南昌温度</strong>
-                <span class="weather-copy" data-weather-copy hidden></span>
-              </div>
-              <button class="weather-action" type="button" data-apply-weather="nanchang" disabled>读取中</button>
+              <button class="weather-action" type="button" data-apply-weather disabled>读取中</button>
             </div>
           </div>
         </section>
@@ -623,7 +659,7 @@
         </div>
       </section>
 
-      <p class="footer">2026 © 噜噜 · designed by YY</p>
+      <p class="footer">2026 © 噜噜 · Designed by YY</p>
     </section>
   </main>
 
@@ -637,6 +673,7 @@
     const liveTime = document.querySelector("#liveTime");
     const toast = document.querySelector("#toast");
     const luluOn = document.querySelector("#luluOn");
+    const citySelect = document.querySelector("#citySelect");
 
     const state = {
       on: false,
@@ -645,23 +682,24 @@
     };
 
     const weatherState = {
-      suggestions: {}
+      city: null,
+      requestId: 0,
+      suggestion: null
     };
 
-    const weatherCities = [
-      { id: "hangzhou", name: "杭州", latitude: 30.2741, longitude: 120.1551 },
-      { id: "nanchang", name: "南昌", latitude: 28.682, longitude: 115.8582 }
-    ];
+    const weatherCities = Array.from(citySelect.options).map((option) => ({
+      id: option.value,
+      name: option.textContent,
+      latitude: Number(option.dataset.latitude),
+      longitude: Number(option.dataset.longitude)
+    }));
 
-    const weatherRows = {};
-    document.querySelectorAll("[data-weather-city]").forEach((row) => {
-      weatherRows[row.dataset.weatherCity] = {
-        kicker: row.querySelector("[data-weather-kicker]"),
-        title: row.querySelector("[data-weather-title]"),
-        copy: row.querySelector("[data-weather-copy]"),
-        button: row.querySelector("[data-apply-weather]")
-      };
-    });
+    const weatherPanel = {
+      kicker: document.querySelector("[data-weather-kicker]"),
+      title: document.querySelector("[data-weather-title]"),
+      copy: document.querySelector("[data-weather-copy]"),
+      button: document.querySelector("[data-apply-weather]")
+    };
 
     luluOn.addEventListener("error", () => {
       app.classList.add("missing-on-image");
@@ -827,48 +865,50 @@
     }
 
     function setWeatherLoading(city) {
-      const row = weatherRows[city.id];
-      weatherState.suggestions[city.id] = null;
-      row.kicker.textContent = city.name + "实时天气";
-      row.title.textContent = "正在读取" + city.name + "温度";
-      row.copy.textContent = "";
-      row.copy.hidden = true;
-      row.button.textContent = "读取中";
-      row.button.disabled = true;
+      weatherState.city = city;
+      weatherState.suggestion = null;
+      weatherPanel.kicker.textContent = city.name + "实时天气";
+      weatherPanel.title.textContent = "正在读取" + city.name + "温度";
+      weatherPanel.copy.textContent = "";
+      weatherPanel.copy.hidden = true;
+      weatherPanel.button.textContent = "读取中";
+      weatherPanel.button.disabled = true;
     }
 
     function setWeatherError(city) {
-      const row = weatherRows[city.id];
-      weatherState.suggestions[city.id] = {
+      weatherState.city = city;
+      weatherState.suggestion = {
         mode: "cool",
         temperature: 26,
         action: "设为 26°C",
         title: "建议冷气 26°C",
         text: ""
       };
-      row.kicker.textContent = city.name + "实时天气";
-      row.title.textContent = "天气读取失败";
-      row.copy.textContent = "";
-      row.copy.hidden = true;
-      row.button.textContent = "采用";
-      row.button.disabled = false;
+      weatherPanel.kicker.textContent = city.name + "实时天气";
+      weatherPanel.title.textContent = "天气读取失败";
+      weatherPanel.copy.textContent = "";
+      weatherPanel.copy.hidden = true;
+      weatherPanel.button.textContent = "采用";
+      weatherPanel.button.disabled = false;
     }
 
     function renderWeatherAdvice(city, weather, suggestion) {
-      const row = weatherRows[city.id];
       const temperature = roundWeatherValue(weather.temperature);
       const feelsLike = roundWeatherValue(weather.feelsLike);
       const humidity = Number.isFinite(weather.humidity) ? " · 湿度 " + roundWeatherValue(weather.humidity) + "%" : "";
-      weatherState.suggestions[city.id] = suggestion;
-      row.kicker.textContent = city.name + " " + temperature + "°C · 体感 " + feelsLike + "°C" + humidity;
-      row.title.textContent = suggestion.title;
-      row.copy.textContent = suggestion.text;
-      row.copy.hidden = !suggestion.text;
-      row.button.textContent = "采用建议";
-      row.button.disabled = false;
+      weatherState.city = city;
+      weatherState.suggestion = suggestion;
+      weatherPanel.kicker.textContent = city.name + " " + temperature + "°C · 体感 " + feelsLike + "°C" + humidity;
+      weatherPanel.title.textContent = suggestion.title;
+      weatherPanel.copy.textContent = suggestion.text;
+      weatherPanel.copy.hidden = !suggestion.text;
+      weatherPanel.button.textContent = "采用建议";
+      weatherPanel.button.disabled = false;
     }
 
     async function loadCityWeather(city) {
+      const requestId = weatherState.requestId + 1;
+      weatherState.requestId = requestId;
       setWeatherLoading(city);
 
       try {
@@ -888,14 +928,20 @@
           throw new Error("Weather payload missing values");
         }
 
+        if (requestId !== weatherState.requestId) return;
         renderWeatherAdvice(city, weather, getWeatherSuggestion(weather.feelsLike, city.name));
       } catch (error) {
+        if (requestId !== weatherState.requestId) return;
         setWeatherError(city);
       }
     }
 
+    function getSelectedWeatherCity() {
+      return weatherCities.find((city) => city.id === citySelect.value) || weatherCities[0];
+    }
+
     function loadWeather() {
-      weatherCities.forEach(loadCityWeather);
+      loadCityWeather(getSelectedWeatherCity());
     }
 
     function showToast(text) {
@@ -1007,9 +1053,9 @@
       render();
     });
 
-    function applyWeatherSuggestion(cityId) {
-      const city = weatherCities.find((item) => item.id === cityId);
-      const suggestion = weatherState.suggestions[cityId];
+    function applyWeatherSuggestion() {
+      const city = weatherState.city;
+      const suggestion = weatherState.suggestion;
       if (!suggestion) return;
 
       state.mode = suggestion.mode;
@@ -1026,11 +1072,10 @@
       render();
     }
 
-    document.querySelectorAll("[data-apply-weather]").forEach((button) => {
-      button.addEventListener("click", () => {
-        applyWeatherSuggestion(button.dataset.applyWeather);
-      });
+    citySelect.addEventListener("change", () => {
+      loadWeather();
     });
+    weatherPanel.button.addEventListener("click", applyWeatherSuggestion);
 
     updateLiveTime();
     window.setInterval(updateLiveTime, 1000);
